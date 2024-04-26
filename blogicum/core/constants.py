@@ -1,0 +1,3 @@
+MAX_LENGTH = 256
+
+MAX_POSTS = 10
