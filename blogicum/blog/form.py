@@ -9,8 +9,10 @@ class PostForm(forms.ModelForm):
         model = Post
         exclude = ('author',)
         widgets = {'pub_date': forms.DateInput(attrs={'type': 'date'})}
-        
-        
-        
-class CommentFrom(forms.ModelForm):
-    
+
+
+class CommentForm(forms.ModelForm):
+
+    class Meta:
+        model = Comment
+        fields = ("text",)

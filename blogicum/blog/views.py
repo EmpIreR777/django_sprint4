@@ -1,29 +1,29 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import UserCreationForm
 
-
-from .form import PostForm
-from blog.models import Post, Category
+from .mixins import PostDispatchMixin
+from .form import PostForm, CommentForm
+from blog.models import Post, Category, Comment
 from core.constants import MAX_POSTS
 
 
 def get_filtered_list():
-    return Post.objects.select_related('category', 'location', 'author').filter(
+    return Post.objects.select_related(
+        'category', 'location', 'author').filter(
         pub_date__lte=timezone.now(),
         is_published=True,
         category__is_published=True,
     )
-
-
-class PostUpdateView(UpdateView):
-    model = Post
-    form_class = PostForm
-    exclude = ('pub_date',)
-    template_name = 'blog/create.html'
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -34,6 +34,20 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+
+class PostUpdateView(PostDispatchMixin, LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    exclude = ('pub_date',)
+    template_name = 'blog/create.html'
+
+
+class PostDeleteView(PostDispatchMixin, LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = "blog/create.html"
+    pk_url_kwarg = "post_id"
+    success_url = reverse_lazy("blog:index")
 
 
 class IndexListView(LoginRequiredMixin, ListView):
@@ -62,6 +76,28 @@ class CategotyListView(LoginRequiredMixin, ListView):
         context['category'] = category
         context['page_obj'] = get_filtered_list().filter(category=category)
         return context
+
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    post_instance = None
+    model = Comment
+    form_class = CommentForm
+    pk_url_kwarg = "post_id"
+    template_name = "blog/comment.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.post_instance = get_object_or_404(Post, pk=kwargs.get("post_id"))
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.post = self.post_instance
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "blog:post_detail", kwargs={"post_id": self.post_instance.pk}
+        )
 
 
 class RegistrCreateView(CreateView):

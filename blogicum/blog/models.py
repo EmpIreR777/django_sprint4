@@ -97,18 +97,33 @@ class Location(PublishedModel):
         return self.name
 
 
-class Сomment(PublishedModel):
-    text = models.TextField('Текст комментария')
-    сomment = models.ForeignKey(
-        Post,
-        on_delete=models.CASCADE,
-        related_name='comment',
-        verbose_name='Комментарий',
+class Comment(models.Model):
+    text = models.TextField(
+        "Текст комментария",
+        max_length=500,
     )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Пользователь'
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Автор комментария",
+        related_name="comments",
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="comments",
+    )
+    created_at = models.DateTimeField(
+        "Дата создания",
+        auto_now_add=True,
     )
 
+    class Meta:
+        ordering = ("created_at",)
+
+    def __str__(self):
+        return self.text
+    
     class Meta:
         verbose_name = "комментарий"
         verbose_name_plural = "Комментарии"
