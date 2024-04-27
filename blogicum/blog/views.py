@@ -33,7 +33,7 @@ class IndexListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = 'blog/index.html'
     queryset = get_filtered_list()
-    ordering = '-pub_date'
+    ordering = 'pub_date'
     paginate_by = PAGINATOR_POST
 
 
@@ -87,8 +87,9 @@ class PostDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["form"] = CommentForm()
-        context["comments"] = self.object.comments.select_related("author")
+        context['form'] = CommentForm()
+        context['comments'] = self.object.comments.select_related(
+            'author').order_by('created_at')
         return context
 
 
@@ -128,10 +129,10 @@ class CategoryListView(LoginRequiredMixin, ListView):
 class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
     post_instance = None
     form_class = CommentForm
-    pk_url_kwarg = "post_id"
+    pk_url_kwarg = 'post_id'
 
     def dispatch(self, request, *args, **kwargs):
-        self.post_instance = get_object_or_404(Post, pk=kwargs.get("post_id"))
+        self.post_instance = get_object_or_404(Post, pk=kwargs.get('post_id'))
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -141,36 +142,36 @@ class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy(
-            "blog:post_detail", kwargs={"post_id": self.post_instance.pk}
+            'blog:post_detail', kwargs={'post_id': self.post_instance.pk}
         )
 
 
 class CommentUpdateView(CommentMixin, LoginRequiredMixin, UpdateView):
     form_class = CommentForm
-    pk_url_kwarg = "comment_id"
+    pk_url_kwarg = 'comment_id'
 
     def dispatch(self, request, *args, **kwargs):
-        instance = get_object_or_404(Comment, pk=kwargs.get("comment_id"))
+        instance = get_object_or_404(Comment, pk=kwargs.get('comment_id'))
         if request.user != instance.author:
-            return redirect("blog:post_detail", self.kwargs.get("post_id"))
+            return redirect('blog:post_detail', self.kwargs.get('post_id'))
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy(
-            "blog:post_detail", kwargs={"post_id": self.kwargs.get("post_id")}
+            'blog:post_detail', kwargs={'post_id': self.kwargs.get('post_id')}
         )
 
 
 class CommentDeleteView(CommentMixin, LoginRequiredMixin, DeleteView):
-    pk_url_kwarg = "comment_id"
+    pk_url_kwarg = 'comment_id'
 
     def dispatch(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, pk=kwargs.get("comment_id"))
+        comment = get_object_or_404(Comment, pk=kwargs.get('comment_id'))
         if self.request.user != comment.author:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy(
-            "blog:post_detail", kwargs={"post_id": self.kwargs.get("post_id")}
+            'blog:post_detail', kwargs={'post_id': self.kwargs.get('post_id')}
         )
