@@ -15,7 +15,7 @@
             <p class="text-danger">Выбранная категория снята с публикации админом</p>
           {% endif %}
           {{ post.pub_date|date:"d E Y, H:i" }} | {% if post.location and post.location.is_published %}{{ post.location.name }}{% else %}Планета Земля{% endif %}<br>
-          От автора <a class="text-muted" href="{% url 'users:profile' post.author.username %}">@{{ post.author.username }}</a> в
+          От автора <a class="text-muted" href="{% url 'blog:profile' post.author.username %}">@{{ post.author.username }}</a> в
           категории {% include "includes/category_link.html" %}
         </small>
       </h6>

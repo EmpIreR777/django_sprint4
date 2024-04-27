@@ -153,3 +153,6 @@ sent_emails/
 posts_images/
 /posts_images/
 .posts_images
+/sent_emails/
+.sent_emails/
+sent_emails/

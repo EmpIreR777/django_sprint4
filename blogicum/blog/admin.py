@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Post, Location
+from .models import Category, Post, Location, Comment
 
 
 @admin.register(Post)
@@ -11,7 +11,7 @@ class PostAdmin(admin.ModelAdmin):
     list_editable = ('is_published',)
     search_fields = ('title',)
     list_filter = ('category',)
-    list_per_page = 7
+    list_per_page = 10
     raw_id_fields = ('category',)
 
 
@@ -35,6 +35,11 @@ class PostInLine(admin.StackedInline):
 class LocationAdmin(admin.ModelAdmin):
     inlines = (PostInLine,)
     list_display = ('name', 'is_published', 'created_at')
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display=('text',)
 
 
 admin.site.empty_value_display = 'Не задано'
