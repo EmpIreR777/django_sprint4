@@ -15,7 +15,8 @@ from django.db.models import Count
 from .forms import PostForm, CommentForm
 from blog.models import Post, Category, User, Comment
 from core.mixins import PostDispatchMixin, CommentMixin
-from core.constants import PAGINATOR_POST, PAGINATOR_PROFILE, PAGINATOR_CATEGORY
+from core.constants import (
+    PAGINATOR_POST, PAGINATOR_PROFILE, PAGINATOR_CATEGORY)
 
 
 def get_filtered_list():
@@ -25,7 +26,7 @@ def get_filtered_list():
             pub_date__lte=timezone.now(),
             is_published=True,
             category__is_published=True,
-        ).annotate(comment_count=Count("comments")).order_by("-pub_date")
+        ).annotate(comment_count=Count('comments')).order_by('-pub_date')
     )
 
 
@@ -33,7 +34,6 @@ class IndexListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = 'blog/index.html'
     queryset = get_filtered_list()
-    ordering = 'pub_date'
     paginate_by = PAGINATOR_POST
 
 
@@ -49,9 +49,9 @@ class ProfileListView(ListView):
         user = self.get_object()
         if self.request.user != user:
             return user.posts.filter(is_published=True).annotate(
-                comment_count=Count("comments")).order_by("pub_date")
+                comment_count=Count('comments')).order_by('pub_date')
         return user.posts.all().annotate(comment_count=Count(
-            "comments")).order_by("pub_date")
+            'comments')).order_by('pub_date')
 
     def get_context_data(self, **kwargs):
         return dict(
@@ -60,7 +60,7 @@ class ProfileListView(ListView):
         )
 
 
-class ProfileUpdateView(PostDispatchMixin, LoginRequiredMixin, UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'blog/user.html'
     fields = ['username', 'first_name', 'last_name', 'email']
     success_url = reverse_lazy('users:edit_profile')
@@ -82,7 +82,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostDetailView(DetailView):
     model = Post
     template_name = 'blog/detail.html'
-    queryset = get_filtered_list()
     pk_url_kwarg = 'post_id'
 
     def get_context_data(self, **kwargs):
