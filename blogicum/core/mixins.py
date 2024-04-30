@@ -6,11 +6,10 @@ from blog.models import Post, Comment
 class PostDispatchMixin:
     def dispatch(self, request, *args, **kwargs):
         instance = get_object_or_404(
-            Post,
-            pk=kwargs.get("post_id"),
+            Post, pk=kwargs.get("post_id"),
         )
         if instance.author != request.user:
-            return redirect("blog:post_detail", self.kwargs.get("post_id"))
+            return redirect("blog:post_detail", self.kwargs.get('post_id'))
         return super().dispatch(request, *args, **kwargs)
 
 

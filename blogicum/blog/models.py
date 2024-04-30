@@ -20,7 +20,8 @@ class Post(PublishedModel):
         help_text=(
             'Если установить дату и время в будущем — '
             'можно делать отложенные публикации.'
-        ),)
+        ),
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -117,3 +118,6 @@ class Comment(models.Model):
         verbose_name = 'коментарий'
         verbose_name_plural = 'Коментарии'
         ordering = ('-created_at',)
+
+    def __str__(self):
+        return f'{self.author}'

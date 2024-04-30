@@ -5,8 +5,7 @@ from .models import Category, Post, Location, Comment
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'text', 'is_published', 'category',
-                    'author', 'created_at')
+    list_display = ('title', 'text', 'is_published', 'category', 'author', 'created_at')
     list_display_links = ('title',)
     list_editable = ('is_published',)
     search_fields = ('title',)
@@ -39,7 +38,7 @@ class LocationAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display=('text',)
+    list_display = ('text', 'author')
 
 
 admin.site.empty_value_display = 'Не задано'
