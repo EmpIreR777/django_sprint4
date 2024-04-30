@@ -1,4 +1,3 @@
-from django.db.models.query import QuerySet
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     DetailView,
@@ -8,7 +7,7 @@ from django.views.generic import (
     DeleteView,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
@@ -16,7 +15,8 @@ from django.db.models import Count, Q
 from .forms import PostForm, CommentForm
 from blog.models import Post, Category, User, Comment
 from core.mixins import PostDispatchMixin, CommentMixin
-from core.constants import PAGINATOR_POST, PAGINATOR_PROFILE, PAGINATOR_CATEGORY
+from core.constants import (
+    PAGINATOR_POST, PAGINATOR_PROFILE, PAGINATOR_CATEGORY)
 
 
 def get_filtered_list():
@@ -105,7 +105,8 @@ class PostDetailView(LoginRequiredMixin, DetailView):
             is_published=True,
             category__is_published=True,
         ) | Q(author=self.request.user)
-        return Post.objects.select_related('category', 'location', 'author').filter(q)
+        return Post.objects.select_related(
+            'category', 'location', 'author').filter(q)
 
 
 class PostDeleteView(PostDispatchMixin, LoginRequiredMixin, DeleteView):

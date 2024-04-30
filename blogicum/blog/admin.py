@@ -5,7 +5,9 @@ from .models import Category, Post, Location, Comment
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'text', 'is_published', 'category', 'author', 'created_at')
+    list_display = ('title', 'text',
+                    'is_published', 'category',
+                    'author', 'created_at')
     list_display_links = ('title',)
     list_editable = ('is_published',)
     search_fields = ('title',)
