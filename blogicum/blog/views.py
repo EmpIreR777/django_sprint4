@@ -35,7 +35,8 @@ def get_filtered_posts():
 class PostDispatchMixin:
     def dispatch(self, request, *args, **kwargs):
         instance = get_object_or_404(
-            Post, pk=kwargs.get("post_id"),
+            Post,
+            pk=kwargs.get("post_id"),
         )
         if instance.author != request.user:
             return redirect("blog:post_detail", self.kwargs.get('post_id'))
@@ -45,7 +46,6 @@ class PostDispatchMixin:
 class CommentMixin:
     model = Comment
     template_name = "blog/comment.html"
-
 
 
 class IndexListView(LoginRequiredMixin, ListView):
@@ -186,9 +186,8 @@ class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse(
-            'blog:post_detail', kwargs={'post_id': self.post_instance.pk}
-        )
+        return reverse('blog:post_detail', kwargs={
+            'post_id': self.post_instance.pk})
 
 
 class CommentUpdateView(CommentMixin, LoginRequiredMixin, UpdateView):
