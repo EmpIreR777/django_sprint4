@@ -1,6 +1,7 @@
 from django import forms
 from django.core.mail import send_mail
 from django.utils import timezone
+
 from .models import Post, User, Comment
 
 
@@ -29,16 +30,6 @@ class PostForm(forms.ModelForm):
 
         model = Post
         exclude = ('author',)
-
-    def clean(self):
-        super().clean()
-        send_mail(
-            subject='Новая публикация!',
-            message=f'с названием {self.cleaned_data["title"]}',
-            from_email='publicat_form@blogicum.not',
-            recipient_list=['admin@blogicum.not'],
-            fail_silently=True,
-        )
 
 
 class CommentForm(forms.ModelForm):

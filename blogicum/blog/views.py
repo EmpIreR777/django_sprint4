@@ -11,15 +11,15 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
+from django.core.mail import send_mail
 
 from .forms import PostForm, CommentForm
 from blog.models import Post, Category, User, Comment
-from core.mixins import PostDispatchMixin, CommentMixin
 from core.constants import (
     PAGINATOR_POST, PAGINATOR_PROFILE, PAGINATOR_CATEGORY)
 
 
-def get_filtered_list():
+def get_filtered_posts():
     return (
         Post.objects.select_related('category', 'location', 'author')
         .filter(
@@ -32,10 +32,26 @@ def get_filtered_list():
     )
 
 
+class PostDispatchMixin:
+    def dispatch(self, request, *args, **kwargs):
+        instance = get_object_or_404(
+            Post, pk=kwargs.get("post_id"),
+        )
+        if instance.author != request.user:
+            return redirect("blog:post_detail", self.kwargs.get('post_id'))
+        return super().dispatch(request, *args, **kwargs)
+
+
+class CommentMixin:
+    model = Comment
+    template_name = "blog/comment.html"
+
+
+
 class IndexListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = 'blog/index.html'
-    queryset = get_filtered_list()
+    queryset = get_filtered_posts()
     paginate_by = PAGINATOR_POST
 
 
@@ -83,6 +99,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        send_mail(
+            subject='Новая публикация!',
+            message=f'с названием {form.cleaned_data["title"]}',
+            from_email='publicat_form@blogicum.not',
+            recipient_list=['admin@blogicum.not'],
+            fail_silently=True,
+        )
         return super().form_valid(form)
 
 
@@ -105,7 +128,9 @@ class PostDetailView(LoginRequiredMixin, DetailView):
             pub_date__lte=timezone.now(),
             is_published=True,
             category__is_published=True,
-        ) | Q(author=self.request.user)
+        )
+        if self.request.user.is_authenticated:
+            q |= Q(author=self.request.user)
         return Post.objects.select_related(
             'category', 'location', 'author').filter(q)
 
@@ -138,7 +163,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
         self.category = get_object_or_404(
             Category, slug=self.kwargs['category_slug'], is_published=True
         )
-        return get_filtered_list().filter(category=self.category)
+        return get_filtered_posts().filter(category=self.category)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -161,7 +186,7 @@ class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy(
+        return reverse(
             'blog:post_detail', kwargs={'post_id': self.post_instance.pk}
         )
 
@@ -177,7 +202,7 @@ class CommentUpdateView(CommentMixin, LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy(
+        return reverse(
             'blog:post_detail', kwargs={'post_id': self.kwargs.get('post_id')}
         )
 
@@ -192,6 +217,6 @@ class CommentDeleteView(CommentMixin, LoginRequiredMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy(
+        return reverse(
             'blog:post_detail', kwargs={'post_id': self.kwargs.get('post_id')}
         )

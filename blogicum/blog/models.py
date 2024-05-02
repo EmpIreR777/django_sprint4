@@ -54,7 +54,7 @@ class Post(PublishedModel):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("blog:profile", kwargs={"username": self.author})
+        return reverse('blog:profile', kwargs={'username': self.author})
 
 
 class Category(PublishedModel):
