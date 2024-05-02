@@ -97,8 +97,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     form_class = PostForm
     template_name = 'blog/create.html'
 
-    def form_valid(self, form):
-        form.instance.author = self.request.user
+    def send_mail(self, form):
         send_mail(
             subject='Новая публикация!',
             message=f'с названием {form.cleaned_data["title"]}',
@@ -106,6 +105,10 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             recipient_list=['admin@blogicum.not'],
             fail_silently=True,
         )
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        self.send_mail(form)
         return super().form_valid(form)
 
 
@@ -212,7 +215,7 @@ class CommentDeleteView(CommentMixin, LoginRequiredMixin, DeleteView):
     def dispatch(self, request, *args, **kwargs):
         comment = get_object_or_404(Comment, pk=kwargs.get('comment_id'))
         if self.request.user != comment.author:
-            raise PermissionDenied
+            raise PermissionDenied('Вы не имеете разрешения на это действие.')
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
