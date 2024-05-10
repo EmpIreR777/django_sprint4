@@ -11,8 +11,7 @@
 {% for comment in comments %}
   <div class="media mb-4">
     <div class="media-body">
-      <h5 class="mt-0">
-        <a href="{% url 'blog:profile' comment.author.username %}" name="comment_{{ comment.id }}">
+      <h5 class="mtourl 'blog:profile' comment.author.username %}" name="comment_{{ comment.id }}">
           @{{ comment.author.username }}
         </a>
       </h5>
